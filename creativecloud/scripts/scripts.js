@@ -100,6 +100,20 @@ const locales = {
   kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
   // Langstore Support.
   langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+  // geo expansion MWPW-125686
+  za: { ietf: 'en-GB', tk: 'pps7abe.css' }, // South Africa (GB English)
+  ng: { ietf: 'en-GB', tk: 'pps7abe.css' }, // Nigeria (GB English)
+  cr: { ietf: 'es-419', tk: 'oln4yqj.css' }, // Costa Rica (Spanish Latin America)
+  ec: { ietf: 'es-419', tk: 'oln4yqj.css' }, // Ecuador (Spanish Latin America)
+  pr: { ietf: 'es-419', tk: 'oln4yqj.css' }, // Puerto Rico (Spanish Latin America)
+  gt: { ietf: 'es-419', tk: 'oln4yqj.css' }, // Guatemala (Spanish Latin America)
+  eg_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' }, // Egypt (Arabic)
+  kw_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' }, // Kuwait (Arabic)
+  qa_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' }, // Qatar (Arabic)
+  eg_en: { ietf: 'en-GB', tk: 'pps7abe.css' }, // Egypt (GB English)
+  kw_en: { ietf: 'en-GB', tk: 'pps7abe.css' }, // Kuwait (GB English)
+  qa_en: { ietf: 'en-GB', tk: 'pps7abe.css' }, // Qatar (GB English)
+  gr_el: { ietf: 'el', tk: 'fnx0rsr.css' }, // Greece (Greek)
 };
 
 // Add any config options.
@@ -134,9 +148,21 @@ const CONFIG = {
 };
 
 // Load LCP image immediately
+const eagerLoad = (img) => {
+  img?.setAttribute('loading', 'eager');
+  img?.setAttribute('fetchpriority', 'high');
+};
+
 (async function loadLCPImage() {
-  const lcpImg = document.querySelector('img');
-  lcpImg?.removeAttribute('loading');
+  const firstDiv = document.querySelector('body > main > div:nth-child(1) > div');
+  if (firstDiv?.classList.contains('marquee')) {
+    firstDiv.querySelectorAll('img').forEach(eagerLoad);
+  } else if (firstDiv?.classList.contains('changebg')) {
+    firstDiv.querySelector(':scope > div:nth-child(1)').querySelectorAll('img').forEach(eagerLoad);
+    import(`${CONFIG.codeRoot}/deps/interactive-marquee-changebg/changeBgMarquee.js`);
+  } else {
+    eagerLoad(document.querySelector('img'));
+  }
 }());
 
 /*
