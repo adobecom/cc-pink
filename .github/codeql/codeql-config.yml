@@ -1,4 +1,0 @@
-name: "CC CodeQL Config"
-
-paths-ignore:
-  - node_modules
