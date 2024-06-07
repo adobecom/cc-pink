@@ -2,24 +2,27 @@
   "name": "@adobecom/cc",
   "private": true,
   "version": "1.0.0",
-  "description": "Website foundation technology.",
+  "description": "Adobe Creative Cloud",
   "scripts": {
-    "test": "wtr \"./test/**/*.test.js\" --node-resolve --port=2000 --coverage",
+    "test": "wtr --config ./web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage",
     "test:watch": "npm test -- --watch",
+    "wtr": "wtr --config ./web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage --concurrent-browsers 4",
+    "wtr:watch": "npm run wtr -- --watch",
+    "lcov": "lcov -a coverage/jest/lcov.info -a coverage/wtr/lcov.info -o coverage/lcov.info",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
     "lint:css": "stylelint 'creativecloud/blocks/**/*.css' 'creativecloud/styles/*.css'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adobecom/college.git"
+    "url": "git+https://github.com/adobecom/cc.git"
   },
   "author": "Adobe",
   "license": "Apache License 2.0",
   "bugs": {
-    "url": "https://github.com/adobecom/college/issues"
+    "url": "https://github.com/adobecom/cc/issues"
   },
-  "homepage": "https://github.com/adobecom/college#readme",
+  "homepage": "https://github.com/adobecom/cc#readme",
   "devDependencies": {
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",
@@ -27,6 +30,7 @@
     "@web/dev-server-import-maps": "^0.0.6",
     "@web/test-runner": "0.13.27",
     "@web/test-runner-commands": "0.6.1",
+    "@web/test-runner-mocha": "^0.9.0",
     "chai": "4.3.6",
     "eslint": "8.11.0",
     "eslint-config-airbnb-base": "15.0.0",
@@ -36,5 +40,8 @@
     "stylelint": "14.6.0",
     "stylelint-config-prettier": "9.0.3",
     "stylelint-config-standard": "25.0.0"
+  },
+  "dependencies": {
+    "@adobecom/milo": "github:adobecom/milo#main"
   }
 }
