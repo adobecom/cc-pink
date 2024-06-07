@@ -9,7 +9,7 @@ function getImageSrc(viewport, pic) {
   let imageSrc = '';
   if (viewport === 'mobile') imageSrc = pic.querySelector('source[type="image/webp"]:not([media])');
   else imageSrc = pic.querySelector('source[type="image/webp"][media]');
-  return imageSrc.srcset.replace('./', '/');
+  return imageSrc.srcset;
 }
 
 function createLayer(viewport, property, layerConfig) {
@@ -52,7 +52,12 @@ function createGroups(vp, current, swatchArr, srcArr) {
   customElem.config[vp].groups.push(obj);
 }
 
-export default function changeBg(el) {
+export default async function changeBg(el) {
+  const { host } = window.location;
+  if (host.includes('hlx.page')) {
+    const { default: debug } = await import('./author-feedback.js');
+    debug(el);
+  }
   const layers = ['defaultBgSrc', 'marqueeTitleImgSrc', 'talentSrc'];
   const layerRows = [...el.querySelectorAll(':scope > div')];
   ['mobile', 'tablet', 'desktop'].forEach((vp, vi) => {
