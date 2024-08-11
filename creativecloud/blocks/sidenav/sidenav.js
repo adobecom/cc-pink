@@ -9,6 +9,19 @@ const makePause = async (timeout = 0) => new Promise((resolve) => setTimeout(res
 
 const getIdLeaf = (id) => (id?.substring(id.lastIndexOf('/') + 1) || id).toLowerCase();
 
+const computeDaaLLText = (text) => {
+  const tokens = text.split('-');
+  if (tokens.length === 1) {
+    return text;
+  }
+  return tokens
+    .filter((token) => token !== 'and')
+    .map((token) => token.substring(0, 3))
+    .join('-');
+};
+
+const generateDaaLL = (text, headline) => `${text}--${headline}`;
+
 const getCategories = (items, isMultilevel, mapCategories) => {
   const configuration = { manageTabIndex: true };
   if (isMultilevel) {
@@ -16,7 +29,7 @@ const getCategories = (items, isMultilevel, mapCategories) => {
   }
   const mapParents = [];
   const tag = createTag('sp-sidenav', configuration);
-  const merchTag = createTag('merch-sidenav-list', { deeplink: 'category' });
+  const merchTag = createTag('merch-sidenav-list', { deeplink: 'category', 'daa-lh': 'b2|filters' });
   merchTag.append(tag);
   items.forEach((item) => {
     if (item?.id) {
@@ -24,7 +37,11 @@ const getCategories = (items, isMultilevel, mapCategories) => {
       const value = getIdLeaf(item.id);
       // first token is type, second is parent category
       const isParent = item.id.split('/').length <= 2;
-      const itemTag = createTag('sp-sidenav-item', { label: item.name, value });
+      const itemTag = createTag('sp-sidenav-item', {
+        label: item.name,
+        value,
+        'daa-ll': generateDaaLL(computeDaaLLText(value), 'cat'),
+      });
       if (item.icon) {
         item.icon.setAttribute('slot', 'icon');
         itemTag.append(item.icon);
@@ -38,7 +55,11 @@ const getCategories = (items, isMultilevel, mapCategories) => {
           if (!mapParents[parentId]) {
             const parentItem = mapCategories[parentId];
             if (parentItem) {
-              mapParents[parentId] = createTag('sp-sidenav-item', { label: parentItem.name, value: parentId });
+              mapParents[parentId] = createTag('sp-sidenav-item', {
+                label: parentItem.name,
+                value: parentId,
+                'daa-ll': generateDaaLL(computeDaaLLText(value), 'cat'),
+              });
               tag.append(mapParents[parentId]);
             }
           }
@@ -52,12 +73,13 @@ const getCategories = (items, isMultilevel, mapCategories) => {
 };
 
 const getTypes = (arrayTypes, typeText) => {
-  const tag = createTag('merch-sidenav-checkbox-group', { title: typeText, deeplink: 'types' });
+  const tag = createTag('merch-sidenav-checkbox-group', { sidenavCheckboxTitle: typeText, deeplink: 'types', 'daa-lh': 'b3|types' });
   arrayTypes.forEach((item) => {
     if (item.name?.length > 0) {
       const checkbox = createTag('sp-checkbox', {
         emphasized: '',
         name: getIdLeaf(item.id),
+        'daa-ll': generateDaaLL(item.name, 'types'),
       });
       checkbox.append(item.name);
       tag.append(checkbox);
@@ -122,12 +144,12 @@ function appendSearch(rootNav, searchText) {
 
 function appendResources(rootNav, resourceLink) {
   const literals = resourceLink.textContent.split(':');
-  const title = literals[0].trim();
+  const sidenavListTitle = literals[0].trim();
   const tag = createTag('sp-sidenav', { manageTabIndex: true, class: 'resources' });
-  const merchTag = createTag('merch-sidenav-list', { title });
+  const merchTag = createTag('merch-sidenav-list', { sidenavListTitle, 'daa-ll': generateDaaLL(sidenavListTitle, 'resources') });
   merchTag.append(tag);
   const label = literals[1].trim();
-  const link = createTag('sp-sidenav-item', { href: resourceLink.href, target: '_blank', selected: false });
+  const link = createTag('sp-sidenav-item', { href: resourceLink.href, 'daa-ll': generateDaaLL(sidenavListTitle, 'special-offers'), target: '_blank', selected: false });
   if (resourceLink.href && resourceLink.href.startsWith('http')) {
     link.append(document.createTextNode(label));
     const icon = createTag('sp-icon-link-out-light', { class: 'right', slot: 'icon' });
@@ -143,7 +165,7 @@ export default async function init(el) {
   const deps = Promise.all([
     import('../../deps/merch-sidenav.js'),
     // eslint-disable-next-line import/no-unresolved, import/no-absolute-path
-    import('/libs/deps/lit-all.min.js'),
+    import(`${libs}/deps/lit-all.min.js`),
     import(`${libs}/features/spectrum-web-components/dist/theme.js`),
     import(`${libs}/features/spectrum-web-components/dist/base.js`),
     import(`${libs}/features/spectrum-web-components/dist/shared.js`),
@@ -155,14 +177,14 @@ export default async function init(el) {
     import(`${libs}/features/spectrum-web-components/dist/overlay.js`),
   ]);
 
-  const title = mainRow?.querySelector('h2,h3')?.textContent.trim();
+  const sidenavTitle = mainRow?.querySelector('h2,h3')?.textContent.trim();
   const searchText = mainRow?.querySelector('p > strong')?.textContent.trim();
   const typeText = mainRow?.querySelector('p > em')?.textContent.trim();
   // eslint-disable-next-line prefer-const
   const resourcesLink = mainRow?.querySelector('a');
   let endpoint = categoryRow?.querySelector('a');
   await deps;
-  const rootNav = createTag('merch-sidenav', { title });
+  const rootNav = createTag('merch-sidenav', { sidenavTitle });
   el.replaceWith(rootNav);
   appendSearch(rootNav, searchText);
   if (endpoint) {
